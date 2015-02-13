@@ -28,6 +28,9 @@ def stat_chisquare(c_table):
 
 # expects that rawdata contains two vectors under entries 'X' and 'Y' of equal length
 def contingency_tests(rawdata):
+	# Sometimes JSON loading once isn't enough, in which case 
+	if type(rawdata) == type(u""): rawdata = json.loads(rawdata)
+
 	stat_map = {"chi-squared": stat_chisquare, "fisher": stat_fisher}
 	# todo: make all this async
 	# get contingency table
@@ -36,6 +39,7 @@ def contingency_tests(rawdata):
 	# check for 2x2
 	result = {}
 	if len(x_cats) == 2 and len(y_cats) == 2:
+		print "2x2!"
 		comparison = {"X1": x_cats[0],
 					  "X2": x_cats[1],
 					  "Y1": y_cats[0],
@@ -48,18 +52,18 @@ def contingency_tests(rawdata):
 		result = {"table": c_table.tolist(), "comparison": comparison, "stats": stats}
 	else: # don't handle anything besides 2x2 for now
 		result = {}
-		
+	print result
 	return result
 
 class StatsHandler(tornado.web.RequestHandler):
 	def badRequest(self):
 		self.set_status(http.HTTPStatus.BAD_REQUEST)
+		self.set_header("Access-Control-Allow-Origin", "*")
 		self.finish()
 		
 	def post(self):
 		# todo: check other features of request
 		rawdata = json.loads(self.request.body)
-		
 		if 'X' not in rawdata or 'Y' not in rawdata:
 			self.badRequest()
 			return
@@ -67,6 +71,7 @@ class StatsHandler(tornado.web.RequestHandler):
 		# todo: async this
 		result = contingency_tests(rawdata)
 		self.set_header("Content-Type", "application/json")
+		self.set_header("Access-Control-Allow-Origin", "*")
 		self.write(json.dumps(result, sort_keys=True))
 
 # tell the backend server to accept on "/" only
