@@ -11,13 +11,27 @@ def contingency_tests(rawdata):
 	# Sometimes JSON loading once isn't enough, in which case 
 	if type(rawdata) == type(u""): rawdata = json.loads(rawdata)
 	stat_funs = {"chi-squared": S.chi_square, "fisher": S.fisher}
-	
+
+	# remove the nulls
+	while "null" in rawdata['X']:
+		i = rawdata['X'].index("null")
+		rawdata['X'].pop(i)
+		rawdata['Y'].pop(i)
+
+	while "null" in rawdata['Y']:
+		i = rawdata['Y'].index("null")
+		rawdata['X'].pop(i)
+		rawdata['Y'].pop(i)
+		
 	# get contingency table
 	(c_table, x_cats, y_cats) = S.tabulate(rawdata['X'], rawdata['Y'])
 
-	# check for 2x2
+	# check the number of categories
 	result = {}
-	if len(x_cats) == 2 and len(y_cats) == 2:
+	if len(x_cats) == 1 or len(y_cats) == 1:
+		comparison = {"X_cats": x_cats, "Y_cats": y_cats}
+		result = {"comparison", comparison}
+	elif len(x_cats) == 2 and len(y_cats) == 2:
 #		print "2x2!"
 		comparison = {"X1": x_cats[0],
 					  "X2": x_cats[1],
@@ -76,8 +90,10 @@ class StatsHandler(tornado.web.RequestHandler):
 		self.finish()
 		
 	def post(self):
+		# load raw data
 		rawdata = json.loads(self.request.body)
 
+		# check for any known errors
 		errors = self._validate(rawdata)
 		if errors:
 			self._return({"Error": errors})
@@ -99,6 +115,6 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	application.listen(args.port)
-	print "Accepting JSON requests over HTTP on port %d" % args.port
+	print "Accepting JSON requests over HTTP on port %d..." % args.port
 	tornado.ioloop.IOLoop.instance().start()
 
