@@ -39,21 +39,31 @@ def contingency_tests(rawdata):
 	# check for 2x2
 	result = {}
 	if len(x_cats) == 2 and len(y_cats) == 2:
-		print "2x2!"
+#		print "2x2!"
 		comparison = {"X1": x_cats[0],
 					  "X2": x_cats[1],
 					  "Y1": y_cats[0],
 					  "Y2": y_cats[1]}
 
 		stats = {}
-		for key, method in self.stat_map.iteritems():
+		for key, method in stat_map.iteritems():
 			stats[key] = method(c_table)
 
 		result = {"table": c_table.tolist(), "comparison": comparison, "stats": stats}
 	else: # don't handle anything besides 2x2 for now
 		result = {}
-	print result
+#	print result
 	return result
+
+# rounds all the floats in a json
+def round_all(obj, N):
+	if isinstance(obj, float):
+		return round(obj, N)
+	elif isinstance(obj, dict):
+		return dict((k, round_all(v, N)) for (k, v) in obj.items())
+	elif isinstance(obj, (list, tuple)):
+		return map(lambda(o): round_all(o, N), obj)
+	return obj
 
 class StatsHandler(tornado.web.RequestHandler):
 	def badRequest(self):
@@ -69,10 +79,11 @@ class StatsHandler(tornado.web.RequestHandler):
 			return
 
 		# todo: async this
-		result = contingency_tests(rawdata)
+		result = round_all(contingency_tests(rawdata), 4)
+		
 		self.set_header("Content-Type", "application/json")
 		self.set_header("Access-Control-Allow-Origin", "*")
-		self.write(json.dumps(result, sort_keys=True))
+		self.write(json.dumps(result, sort_keys=True, indent=4))
 
 # tell the backend server to accept on "/" only
 application = tornado.web.Application([

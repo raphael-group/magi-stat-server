@@ -1,0 +1,39 @@
+{
+    "comparison": {
+        "X1": "Mutated", 
+        "X2": "Not mutated", 
+        "Y1": "female", 
+        "Y2": "male"
+    }, 
+    "stats": {
+        "chi-squared": {
+            "chi2": 0.2716, 
+            "dof": 0.6023, 
+            "expected": [
+                [
+                    8.6737, 
+                    15.3263
+                ], 
+                [
+                    94.3263, 
+                    166.6737
+                ]
+            ], 
+            "p": 1, 
+            "valid": true
+        }, 
+        "fisher": {
+            "p": 0.5133
+        }
+    }, 
+    "table": [
+        [
+            7.0, 
+            17.0
+        ], 
+        [
+            96.0, 
+            165.0
+        ]
+    ]
+}
