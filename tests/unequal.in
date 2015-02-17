@@ -1,0 +1,15 @@
+{
+    "Y": [
+        "female", 
+        "male",
+		"male",
+		"female" 
+    ],
+    "X": [
+        "mutated", 
+        "not mutated", 
+        "not mutated", 
+        "not mutated",
+		"not mutated"
+    ]
+}

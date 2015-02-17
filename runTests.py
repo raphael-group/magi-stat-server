@@ -1,7 +1,9 @@
 import argparse
 import json
+import os
+import sys
 import unittest
-import submit
+import submit # local
 
 class TestStatServer(unittest.TestCase):
 	pass
@@ -14,7 +16,6 @@ def test_generator(input_file, output_file, port):
 			json_out = json.load(fout)
 
 		returned = json.loads(submit.submit(json_in, port))
-		print type(returned)
 		self.assertEqual(returned, json_out) # input_file
 		
 	return test
@@ -22,22 +23,27 @@ def test_generator(input_file, output_file, port):
 if __name__ == "__main__":
 	# set default for the test file
 	parser = argparse.ArgumentParser('Submit a json file to the statistics server.')
-	parser.add_argument('--profile', help='two-column list of files', type=argparse.FileType('r'),
-						default='tests/testlist.txt')
-	parser.add_argument('--port', default=8888, help='port that the statistics server runs on')
+	parser.add_argument('--dir', help='directory', type=str, default='tests/')
+	parser.add_argument('--port', default=8888, help='port that the statistics server runs on', type=int)
 
-	args = parser.parse_args()
+	# parse only the arguments you need:
+	# todo: pass the other arguments to unittest
+	args = parser.parse_known_args(sys.argv)[0]
+	test_files = os.listdir(args.dir)
+	input_files = [f for f in test_files if f[-3:] == '.in']
+	output_files = [f for f in test_files if f[-4:] == '.out']
 
 	# generate a new test for each line in the test list file
-	for line in args.profile:
-		profile = line.rstrip().split(' ')
+	for file_in in input_files:
 		# a writable name
-		name = profile[0].split('.')[0]
-		test_name = 'test_' + name
-		
-		# add the test
-		setattr(TestStatServer, test_name, test_generator(*profile, port=args.port)) 
+		test_name = file_in.split('.')[0]
+		file_out = test_name + '.out'
+		if file_out in output_files:
+			# add the test
+			setattr(TestStatServer, "test_" + test_name, \
+					test_generator(file_in, file_out, port=args.port)) 
 
-	unittest.main()
+	# pass only the title to unittest			
+	unittest.main(argv = ['testServer.py'])
 						   
 							   
