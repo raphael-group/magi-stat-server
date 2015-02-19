@@ -18,7 +18,7 @@ def fisher(c_table): # two-sided
 	return {"p": stats.fisher_exact(c_table)[1]}
 
 def chi_square(c_table):
-	res = dict(zip(["chi2", "dof", "p", "expected"],
+	res = dict(zip(["chi2", "p", "dof", "expected"],
 				  stats.chi2_contingency(c_table)))
 	res["valid"] = bool((res["expected"] >= 5).all())
 	res["expected"] = res["expected"].tolist()
