@@ -1,10 +1,10 @@
 import argparse
+import httplib
 import json
 import numpy
 import tornado.ioloop
 import tornado.web
-import stats as S
-# local
+import stats as S # local
 
 # expects that rawdata contains two homogeneous vectors under entries 'X' and 'Y' of equal length
 def contingency_tests(rawdata):
@@ -21,18 +21,54 @@ def contingency_tests(rawdata):
 	(c_table, x_cats, y_cats) = S.tabulate(rawdata['X'], rawdata['Y'])
 
 	# construct the results object, including the contingency table
-	result = dict(table=[[""] + list(y_cats)], stats={}, samplesRemoved=len(indicesToRemove))
+	result = dict(table=[[""] + list(y_cats)], \
+				  stats={}, \
+				  samplesRemoved=len(indicesToRemove))
 	for x, row in zip(x_cats, c_table.tolist()):
 		result['table'].append([x] + row)
 
+
 	# check the number of categories
-	if len(x_cats) == 1 or len(y_cats) == 1:
+	if len(x_cats) == 1 or len(y_cats) == 1: # can't run tests on a vector
 		pass
 	elif len(x_cats) == 2 and len(y_cats) == 2:
 		for key, method in stat_funs.iteritems():
 			result['stats'][key] = method(c_table)
-	else: # don't handle anything besides 2x2 for now
-		result = {}
+	else:
+		# run the r x c chi-squared test
+		result['stats'] = S.chi_square(c_table)
+
+		# calculate marginal distributions
+		margin_X = numpy.sum(c_table,1)
+		margin_Y = numpy.sum(c_table,0)
+		total = numpy.sum(margin_X)
+		
+		# generate all pairs of categories
+		range_X = range(len(x_cats)) if len(x_cats) > 2 else [0]
+		range_Y = range(len(y_cats)) if len(y_cats) > 2 else [0]
+		i_pairs = [(x,y) for x in range_X for y in range_Y]
+
+		posthoc = []
+		for i,j in i_pairs:
+			# create the 2 x 2 contingency table
+			sub_table = numpy.zeros((2,2))
+			sub_table[0,0] = c_table[i,j]
+			sub_table[0,1] = margin_X[i] - c_table[i,j]
+			sub_table[1,0] = margin_Y[j] - c_table[i,j]
+			sub_table[1,1] = total - numpy.sum(sub_table)
+			
+			sub_result = dict(stats={})
+			if len(x_cats) > 2:
+				sub_result['Xcat'] = x_cats[i]
+			if len(y_cats) > 2:
+				sub_result['Ycat'] = y_cats[j]
+				
+			for key, method in stat_funs.iteritems():
+				sub_result['stats'][key] = method(sub_table)
+			posthoc.append(sub_result)
+
+		result['posthoc'] = posthoc
+
 	return result
 
 # rounds all the floats in a json
@@ -90,13 +126,16 @@ class StatsHandler(tornado.web.RequestHandler):
 		# check for any known errors
 		errors = self._validate(rawdata)
 		if errors:
+			self.set_status(httplib.BAD_REQUEST)
 			self._return({"Error": errors})
 			return
 			
 		# apply result
-		result = contingency_tests(rawdata)
+		result = contingency_tests(rawdata)		
 		self._return(result)
 
+################## server code #####################
+		
 # tell the backend server to accept on "/" only
 application = tornado.web.Application([
 	(r"/", StatsHandler),
