@@ -8,41 +8,29 @@ import stats as S
 
 # expects that rawdata contains two homogeneous vectors under entries 'X' and 'Y' of equal length
 def contingency_tests(rawdata):
-	# Sometimes JSON loading once isn't enough, in which case 
-	if type(rawdata) == type(u""): rawdata = json.loads(rawdata)
 	stat_funs = {"chi-squared": S.chi_square, "fisher": S.fisher}
 
 	# remove the nulls
-	while "null" in rawdata['X']:
-		i = rawdata['X'].index("null")
-		rawdata['X'].pop(i)
-		rawdata['Y'].pop(i)
-
-	while "null" in rawdata['Y']:
-		i = rawdata['Y'].index("null")
-		rawdata['X'].pop(i)
-		rawdata['Y'].pop(i)
+	xIndicesToRemove = set( i for i, x in enumerate(rawdata['X']) if x is None or x.lower() == 'null' )
+	yIndicesToRemove = set( i for i, y in enumerate(rawdata['Y']) if y is None or y.lower() == 'null' )
+	indicesToRemove = xIndicesToRemove | yIndicesToRemove
+	rawdata['X'] = [ x for i, x in enumerate(rawdata['X']) if i not in indicesToRemove ]
+	rawdata['Y'] = [ y for i, y in enumerate(rawdata['Y']) if i not in indicesToRemove ]
 		
 	# get contingency table
 	(c_table, x_cats, y_cats) = S.tabulate(rawdata['X'], rawdata['Y'])
 
+	# construct the results object, including the contingency table
+	result = dict(table=[[""] + list(y_cats)], stats={})
+	for x, row in zip(x_cats, c_table.tolist()):
+		result['table'].append([x] + row)
+
 	# check the number of categories
-	result = {}
 	if len(x_cats) == 1 or len(y_cats) == 1:
-		comparison = {"X_cats": x_cats, "Y_cats": y_cats}
-		result = {"comparison", comparison}
+		pass
 	elif len(x_cats) == 2 and len(y_cats) == 2:
-#		print "2x2!"
-		comparison = {"X1": x_cats[0],
-					  "X2": x_cats[1],
-					  "Y1": y_cats[0],
-					  "Y2": y_cats[1]}
-
-		stats = {}
 		for key, method in stat_funs.iteritems():
-			stats[key] = method(c_table)
-
-		result = {"table": c_table.tolist(), "comparison": comparison, "stats": stats}
+			result['stats'][key] = method(c_table)
 	else: # don't handle anything besides 2x2 for now
 		result = {}
 	return result
@@ -64,15 +52,17 @@ class StatsHandler(tornado.web.RequestHandler):
 			errors.append("Missing X variable")
 		else:
 			# check for homogeneous type
-			Xt = map(type, raw['X'])
-			if any([t != Xt[0] for t in Xt]):
+			Xt = set(map(type, raw['X']))
+			if type(None) in Xt: Xt.remove(type(None))
+			if len(Xt) > 1:
 				errors.append("X has non-homogeneous type")
 			
 		if 'Y' not in raw:
 			errors.append("Missing Y variable")
 		else:
-			Yt = map(type, raw['Y'])
-			if any([t != Yt[0] for t in Yt]):
+			Yt = set(map(type, raw['Y']))
+			if type(None) in Yt: Yt.remove(type(None))
+			if len(Yt) > 1:
 				errors.append("Y has non-homogeneous type")
 
 		if 'X' in raw and 'Y' in raw: # should be same length
@@ -92,6 +82,9 @@ class StatsHandler(tornado.web.RequestHandler):
 	def post(self):
 		# load raw data
 		rawdata = json.loads(self.request.body)
+
+		# Sometimes JSON loading once isn't enough, in which case load it again
+		if type(rawdata) == type(u""): rawdata = json.loads(rawdata)
 
 		# check for any known errors
 		errors = self._validate(rawdata)
