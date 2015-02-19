@@ -21,7 +21,7 @@ def contingency_tests(rawdata):
 	(c_table, x_cats, y_cats) = S.tabulate(rawdata['X'], rawdata['Y'])
 
 	# construct the results object, including the contingency table
-	result = dict(table=[[""] + list(y_cats)], stats={})
+	result = dict(table=[[""] + list(y_cats)], stats={}, samplesRemoved=len(indicesToRemove))
 	for x, row in zip(x_cats, c_table.tolist()):
 		result['table'].append([x] + row)
 
@@ -84,6 +84,7 @@ class StatsHandler(tornado.web.RequestHandler):
 		rawdata = json.loads(self.request.body)
 
 		# Sometimes JSON loading once isn't enough, in which case load it again
+		# TODO: figure out why you need this, doesn't make any sense
 		if type(rawdata) == type(u""): rawdata = json.loads(rawdata)
 
 		# check for any known errors
