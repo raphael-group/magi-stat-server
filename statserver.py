@@ -1,4 +1,5 @@
 import argparse
+import httplib
 import json
 import numpy
 import tornado.ioloop
@@ -73,6 +74,15 @@ class StatsHandler(tornado.web.RequestHandler):
 
 	# take in a dict / other jsonable object and send it back
 	def _return(self, reply):
+		# logging
+		if self.get_status() == httplib.OK:
+			table = reply['table']
+			r, c = len(table) - 1, len(table[0]) - 1
+			print "Received request (%d x %d), returning OK, categorical test results:\n" % (r, c)
+		elif self.get_status() == httplib.BAD_REQUEST:
+			errors = reply['Error']
+			print "Received bad request, returning BAD_REQUEST, errors: " + ";".join(errors)
+
 		result = round_all(reply, 4)
 		self.set_header("Content-Type", "application/json")
 		self.set_header("Access-Control-Allow-Origin", "*")
@@ -90,6 +100,7 @@ class StatsHandler(tornado.web.RequestHandler):
 		# check for any known errors
 		errors = self._validate(rawdata)
 		if errors:
+			self.set_status(httplib.BAD_REQUEST)
 			self._return({"Error": errors})
 			return
 			
