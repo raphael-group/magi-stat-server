@@ -14,12 +14,26 @@ def tabulate(x_list, y_list):
 	return (c_table, x_cats, y_cats)
 
 # statistics reporters
-def fisher(c_table): # two-sided
-	return {"p": stats.fisher_exact(c_table)[1]}
+class Fisher(object):
+	def calc(self, c_table): # two-sided
+		p = stats.fisher_exact(c_table)[1]
+		return {"p": p, \
+				"report": "p = %0.4f" % p}
+	
+	def title(self, x_cats, y_cats):
+		return "Fisher's exact test, %s vs %s on %s vs %s membership" % \
+		   (x_cats[0], x_cats[1], y_cats[0], y_cats[1])
 
-def chi_square(c_table):
-	res = dict(zip(["chi2", "p", "dof", "expected"],
+class ChiSquare(object):
+	def calc(self, c_table):
+		res = dict(zip(["chi2", "p", "dof", "expected"],
 				  stats.chi2_contingency(c_table)))
-	res["valid"] = bool((res["expected"] >= 5).all())
-	res["expected"] = res["expected"].tolist()
-	return res
+		res["valid"] = bool((res["expected"] >= 5).all())
+		res["expected"] = res["expected"].tolist()
+		res["report"] = "\chi^2(%d) = %0.4f, p = %0.4f" % \
+						(res['dof'],res['chi2'],res['p'])
+		return res
+
+	def title(self, x_cats, y_cats):
+		return "Chi square test, (%s) on (%s) membership" % \
+		   (", ".join(x_cats), ", ".join(y_cats))

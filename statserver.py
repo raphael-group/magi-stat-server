@@ -8,7 +8,8 @@ import stats as S
 
 # expects that rawdata contains two homogeneous vectors under entries 'X' and 'Y' of equal length
 def contingency_tests(rawdata):
-	stat_funs = {"chi-squared": S.chi_square, "fisher": S.fisher}
+	stat_tests = {"chi-squared": S.ChiSquare(), \
+				  "fisher": S.Fisher()}
 
 	# remove the nulls
 	xIndicesToRemove = set( i for i, x in enumerate(rawdata['X']) if x is None or x.lower() == 'null' )
@@ -29,8 +30,9 @@ def contingency_tests(rawdata):
 	if len(x_cats) == 1 or len(y_cats) == 1:
 		pass
 	elif len(x_cats) == 2 and len(y_cats) == 2:
-		for key, method in stat_funs.iteritems():
-			result['stats'][key] = method(c_table)
+		for key, test_type in stat_tests.iteritems():
+			result['stats'][key] = test_type.calc(c_table)
+			result['stats'][key]['name'] = test_type.title(x_cats, y_cats)
 	else: # don't handle anything besides 2x2 for now
 		result = {}
 	return result
