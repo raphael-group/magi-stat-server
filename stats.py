@@ -14,12 +14,40 @@ def tabulate(x_list, y_list):
 	return (c_table, x_cats, y_cats)
 
 # statistics reporters
-def fisher(c_table): # two-sided
-	return {"p": stats.fisher_exact(c_table)[1]}
+class Fisher(object):
+	def __init__(self, x_cats, y_cats):
+		self.x_cats = list(x_cats)
+		self.y_cats = list(y_cats)
 
-def chi_square(c_table):
-	res = dict(zip(["chi2", "p", "dof", "expected"],
+	def calc(self, c_table): # two-sided
+		p = stats.fisher_exact(c_table)[1]
+		html = "<b>P-value</b> = %s" % format(p, 'g')
+		tex = "$P = %s$" % format(p, 'g')
+		res = dict(p=p, X=", ".join(self.x_cats), Y=", ".join(self.y_cats),
+				   report=dict(tex=tex, html=html))
+		return res
+	
+	def title(self):
+		return "Fisher's exact test, %s vs %s on %s vs %s membership" % \
+		   (self.x_cats[0], self.x_cats[1], self.y_cats[0], self.y_cats[1])
+
+class Chi2(object):
+	def __init__(self, x_cats, y_cats):
+		self.x_cats = list(x_cats)
+		self.y_cats = list(y_cats)
+
+	def calc(self, c_table):
+		res = dict(zip(["chi2", "p", "DOF", "Expected"],
 				  stats.chi2_contingency(c_table)))
-	res["valid"] = bool((res["expected"] >= 5).all())
-	res["expected"] = res["expected"].tolist()
-	return res
+		res["Valid (all cells > 5)"] = bool((res["Expected"] >= 5).all())
+		res["Expected"] = res["Expected"].tolist()
+		res["X"] = ", ".join(self.x_cats)
+		res["Y"] = ", ".join(self.y_cats)
+		tex = "$\chi^2(%d) = %0.4f, P = %0.4f$" % (res['DOF'],res['chi2'],res['p'])
+		html = "&chi;<sup>2</sup>(%d) = %s, <b>P-value</b> = %s" % (res['DOF'],format(res['chi2'], 'g'),format(res['p'], 'g'))
+		res["report"] = dict(tex=tex, html=html)
+		return res
+
+	def title(self):
+		return "Chi square test, (%s) on (%s) membership" % \
+		   (", ".join(self.x_cats), ", ".join(self.y_cats))

@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import argparse
 import httplib
 import json
@@ -8,8 +10,6 @@ import stats as S # local
 
 # expects that rawdata contains two homogeneous vectors under entries 'X' and 'Y' of equal length
 def contingency_tests(rawdata):
-	stat_funs = {"chi-squared": S.chi_square, "fisher": S.fisher}
-
 	# remove the nulls
 	xIndicesToRemove = set( i for i, x in enumerate(rawdata['X']) if x is None or x.lower() == 'null' )
 	yIndicesToRemove = set( i for i, y in enumerate(rawdata['Y']) if y is None or y.lower() == 'null' )
@@ -27,47 +27,47 @@ def contingency_tests(rawdata):
 	for x, row in zip(x_cats, c_table.tolist()):
 		result['table'].append([x] + row)
 
-
 	# check the number of categories
-	if len(x_cats) == 1 or len(y_cats) == 1: # can't run tests on a vector
+	nx, ny = len(x_cats), len(y_cats)
+	if nx == 1 or ny == 1: # can't run tests on a vector
 		pass
-	elif len(x_cats) == 2 and len(y_cats) == 2:
-		for key, method in stat_funs.iteritems():
-			result['stats'][key] = method(c_table)
+
+	elif nx == 2 and ny == 2:
+		# run on 2x2 table
+		Fisher = S.Fisher(x_cats, y_cats)
+		result['stats'][Fisher.title()] = Fisher.calc(c_table)
+
 	else:
 		# run the r x c chi-squared test
-		result['stats'] = S.chi_square(c_table)
+		Chi2 = S.Chi2(x_cats, y_cats)
+		result['stats'][Chi2.title()] = Chi2.calc(c_table)
 
 		# calculate marginal distributions
-		margin_X = numpy.sum(c_table,1)
-		margin_Y = numpy.sum(c_table,0)
-		total = numpy.sum(margin_X)
-		
-		# generate all pairs of categories
-		range_X = range(len(x_cats)) if len(x_cats) > 2 else [0]
-		range_Y = range(len(y_cats)) if len(y_cats) > 2 else [0]
-		i_pairs = [(x,y) for x in range_X for y in range_Y]
+		if (nx == 2 and ny > 2) or (nx > 2 and ny == 2):
+			# calculate marginal distributions
+			margin_X = numpy.sum(c_table,1)
+			margin_Y = numpy.sum(c_table,0)
+			total = numpy.sum(margin_X)
 
-		posthoc = []
-		for i,j in i_pairs:
-			# create the 2 x 2 contingency table
-			sub_table = numpy.zeros((2,2))
-			sub_table[0,0] = c_table[i,j]
-			sub_table[0,1] = margin_X[i] - c_table[i,j]
-			sub_table[1,0] = margin_Y[j] - c_table[i,j]
-			sub_table[1,1] = total - numpy.sum(sub_table)
-			
-			sub_result = dict(stats={})
-			if len(x_cats) > 2:
-				sub_result['Xcat'] = x_cats[i]
-			if len(y_cats) > 2:
-				sub_result['Ycat'] = y_cats[j]
+			# generate all pairs of categories
+			Xs = range(nx) if nx > 2 else [0]
+			Ys = range(ny) if ny > 2 else [0]
+			for i, j in [ (x, y) for x in Xs for y in Ys ]:
+				# Create a new dataset where we simplify the category with more
+				# than two values into a binary category
+				sub_table = numpy.zeros((2,2))
+				sub_table[0,0] = c_table[i,j]
+				sub_table[0,1] = margin_X[i] - c_table[i,j]
+				sub_table[1,0] = margin_Y[j] - c_table[i,j]
+				sub_table[1,1] = total - numpy.sum(sub_table)
+				subx_cats = [x_cats[i], "Not " + x_cats[i]] if nx > 2 else x_cats
+				suby_cats = [y_cats[j], "Not " + y_cats[j]] if ny > 2 else y_cats
+
+				# Perform Fisher's exact test
+				Fisher = S.Fisher(subx_cats, suby_cats)
+				sub_result = Fisher.calc(sub_table)
 				
-			for key, method in stat_funs.iteritems():
-				sub_result['stats'][key] = method(sub_table)
-			posthoc.append(sub_result)
-
-		result['posthoc'] = posthoc
+				result['stats'][Fisher.title()] = sub_result
 
 	return result
 
@@ -113,7 +113,7 @@ class StatsHandler(tornado.web.RequestHandler):
 		if self.get_status() == httplib.OK:
 			table = reply['table']
 			r, c = len(table) - 1, len(table[0]) - 1
-			print "Received request (%d x %d), returning OK, categorical test results:\n" % (r, c)
+			print "Received request (%d x %d), returning OK, categorical test results." % (r, c)
 		elif self.get_status() == httplib.BAD_REQUEST:
 			errors = reply['Error']
 			print "Received bad request, returning BAD_REQUEST, errors: " + ";".join(errors)
