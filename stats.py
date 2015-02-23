@@ -21,7 +21,7 @@ class Fisher(object):
 
 	def calc(self, c_table): # two-sided
 		p = stats.fisher_exact(c_table)[1]
-		html = "<b>P</b>-value = %s" % format(p, 'g')
+		html = "<b>P-value</b> = %s" % format(p, 'g')
 		tex = "$P = %s$" % format(p, 'g')
 		res = dict(p=p, X=", ".join(self.x_cats), Y=", ".join(self.y_cats),
 				   report=dict(tex=tex, html=html))
@@ -37,14 +37,14 @@ class Chi2(object):
 		self.y_cats = list(y_cats)
 
 	def calc(self, c_table):
-		res = dict(zip(["chi2", "p", "dof", "expected"],
+		res = dict(zip(["chi2", "p", "DOF", "Expected"],
 				  stats.chi2_contingency(c_table)))
-		res["Valid (all cells > 5)"] = bool((res["expected"] >= 5).all())
-		res["Expected"] = res["expected"].tolist()
+		res["Valid (all cells > 5)"] = bool((res["Expected"] >= 5).all())
+		res["Expected"] = res["Expected"].tolist()
 		res["X"] = ", ".join(self.x_cats)
 		res["Y"] = ", ".join(self.y_cats)
-		tex = "$\chi^2(%d) = %0.4f, P = %0.4f$" % (res['dof'],res['chi2'],res['p'])
-		html = "&chi;<sup>2</sup>(%d) = %s, <b>P</b>-value = %s" % (res['dof'],format(res['chi2'], 'g'),format(res['p'], 'g'))
+		tex = "$\chi^2(%d) = %0.4f, P = %0.4f$" % (res['DOF'],res['chi2'],res['p'])
+		html = "&chi;<sup>2</sup>(%d) = %s, <b>P-value</b> = %s" % (res['DOF'],format(res['chi2'], 'g'),format(res['p'], 'g'))
 		res["report"] = dict(tex=tex, html=html)
 		return res
 

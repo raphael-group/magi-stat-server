@@ -33,10 +33,9 @@ def contingency_tests(rawdata):
 		pass
 
 	elif nx == 2 and ny == 2:
+		# run on 2x2 table
 		Fisher = S.Fisher(x_cats, y_cats)
 		result['stats'][Fisher.title()] = Fisher.calc(c_table)
-		Chi2 = S.Chi2(x_cats, y_cats)
-		result['stats'][Chi2.title()] = Chi2.calc(c_table)
 
 	else:
 		# run the r x c chi-squared test
@@ -45,24 +44,24 @@ def contingency_tests(rawdata):
 
 		# calculate marginal distributions
 		if (nx == 2 and ny > 2) or (nx > 2 and ny == 2):
+			# calculate marginal distributions
 			margin_X = numpy.sum(c_table,1)
 			margin_Y = numpy.sum(c_table,0)
 			total = numpy.sum(margin_X)
-			
+
 			# generate all pairs of categories
-			from itertools import product
-			for (i, xCat), (j, yCat) in product(enumerate(x_cats), enumerate(y_cats)):
+			Xs = range(nx) if nx > 2 else [0]
+			Ys = range(ny) if ny > 2 else [0]
+			for i, j in [ (x, y) for x in Xs for y in Ys ]:
 				# Create a new dataset where we simplify the category with more
 				# than two values into a binary category
-				if nx == 2:
-					X = rawdata['X']
-					Y = [ y if y == yCat else 'Not ' + yCat for y in rawdata['Y'] ]
-				else:
-					X = [ x if x == xCat else 'Not ' + yCat for x in rawdata['X'] ]
-					Y = rawdata['Y']
-
-				# create the 2 x 2 contingency table
-				(sub_table, subx_cats, suby_cats) = S.tabulate(X, Y)
+				sub_table = numpy.zeros((2,2))
+				sub_table[0,0] = c_table[i,j]
+				sub_table[0,1] = margin_X[i] - c_table[i,j]
+				sub_table[1,0] = margin_Y[j] - c_table[i,j]
+				sub_table[1,1] = total - numpy.sum(sub_table)
+				subx_cats = [x_cats[i], "Not " + x_cats[i]] if nx > 2 else x_cats
+				suby_cats = [y_cats[j], "Not " + y_cats[j]] if ny > 2 else y_cats
 
 				# Perform Fisher's exact test
 				Fisher = S.Fisher(subx_cats, suby_cats)
