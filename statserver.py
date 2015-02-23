@@ -52,7 +52,8 @@ def contingency_tests(rawdata):
 			# generate all pairs of categories
 			from itertools import product
 			for (i, xCat), (j, yCat) in product(enumerate(x_cats), enumerate(y_cats)):
-				# create the 2 x 2 contingency table
+				# Create a new dataset where we simplify the category with more
+				# than two values into a binary category
 				if nx == 2:
 					X = rawdata['X']
 					Y = [ y if y == yCat else 'Not ' + yCat for y in rawdata['Y'] ]
@@ -60,6 +61,7 @@ def contingency_tests(rawdata):
 					X = [ x if x == xCat else 'Not ' + yCat for x in rawdata['X'] ]
 					Y = rawdata['Y']
 
+				# create the 2 x 2 contingency table
 				(sub_table, subx_cats, suby_cats) = S.tabulate(X, Y)
 
 				# Perform Fisher's exact test

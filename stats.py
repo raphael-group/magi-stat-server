@@ -39,8 +39,8 @@ class Chi2(object):
 	def calc(self, c_table):
 		res = dict(zip(["chi2", "p", "dof", "expected"],
 				  stats.chi2_contingency(c_table)))
-		res["valid"] = bool((res["expected"] >= 5).all())
-		res["expected"] = res["expected"].tolist()
+		res["Valid (all cells > 5)"] = bool((res["expected"] >= 5).all())
+		res["Expected"] = res["expected"].tolist()
 		res["X"] = ", ".join(self.x_cats)
 		res["Y"] = ", ".join(self.y_cats)
 		tex = "$\chi^2(%d) = %0.4f, P = %0.4f$" % (res['dof'],res['chi2'],res['p'])
