@@ -1,6 +1,7 @@
 # a local statistics 
 from scipy import stats
 import numpy
+import sklearn
 
 # return contingency table, x categories, y categories
 def tabulate(x_list, y_list):
@@ -68,7 +69,7 @@ class AdjustedRandIndex(object):
 
 	def title(self):
 		return "Adjusted Rand Index, (%s) vs (%s) labeling" % \
-			   (x_labeling, y_labeling)
+			   (self.x_cats, self.y_cats)
 
 
 ########## validation ########### 
@@ -188,17 +189,17 @@ class partition_tests(object):
 
 	def tests(self, raw): # return the ARI
 		indicesRemoved = remove_paired_nulls(raw, 'X','Y')
-		result['stats'][Fisher.title()] = Fisher.calc(c_table)
+
 		# get the contingency table
 		(_, x_cats, y_cats, pretty_table) = \
-				  tabulate(rawdata['X'], rawdata['Y'])
+				  tabulate(raw['X'], raw['Y'])
 
-		ari = ARI(x_cats, y_cats)
+		ari = AdjustedRandIndex(x_cats, y_cats)
 
 		# construct the results object, including the contingency table
 		result = dict(table=pretty_table,
 					  stats={}, \
-					  samplesRemoved=len(indicesToRemove))
-		result['stats'][ari.title()] = ari.calc()
+					  samplesRemoved=len(indicesRemoved))
+		result['stats'][ari.title()] = ari.calc(raw['X'], raw['Y'])
 		
 		return result

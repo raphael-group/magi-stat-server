@@ -4,9 +4,7 @@ import argparse
 
 def submit(data, port):
 	site = 'http://127.0.0.1:%d/' % port
-#	req.add_header('Content-Type', 'application/json')
 	r = requests.post(site, json.dumps(data))
-#	if r.status_code == 400:
 	return r.text
 	
 # submit a json as a file to the statistics server
