@@ -1,12 +1,14 @@
 import json
-import urllib2
+import requests
 import argparse
 
 def submit(data, port):
-	req = urllib2.Request('http://127.0.0.1:%d/' % port)
-	req.add_header('Content-Type', 'application/json')
-	return urllib2.urlopen(req, json.dumps(data)).read()
-
+	site = 'http://127.0.0.1:%d/' % port
+#	req.add_header('Content-Type', 'application/json')
+	r = requests.post(site, json.dumps(data))
+#	if r.status_code == 400:
+	return r.text
+	
 # submit a json as a file to the statistics server
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser('Submit a json file to the statistics server.')
