@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import argparse
 import httplib
 import json
@@ -15,7 +13,7 @@ def round_all(obj, N):
 	elif isinstance(obj, dict):
 		return dict((k, round_all(v, N)) for (k, v) in obj.items())
 	elif isinstance(obj, (list, tuple)):
-		return map(lambda(o): round_all(o, N), obj)
+		return map(lambda o: round_all(o, N), obj)
 	return obj
 
 ##### request handler which takes in POST requests and returns JSONs #####

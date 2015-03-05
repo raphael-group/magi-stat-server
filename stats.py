@@ -1,7 +1,7 @@
 # a local statistics 
 from scipy import stats
 import numpy
-import sklearn
+import sklearn.metrics
 
 # return contingency table, x categories, y categories
 def tabulate(x_list, y_list):
@@ -12,7 +12,7 @@ def tabulate(x_list, y_list):
 	for pair in zip(xinv, yinv):
 		c_table[pair[0]][pair[1]] += 1
 		
-	pretty_table = [list(y_cats)]
+	pretty_table = [[""] + list(y_cats)]
 	for x, row in zip(x_cats, c_table.tolist()):
 		pretty_table.append([x] + row)
 
@@ -65,7 +65,8 @@ class AdjustedRandIndex(object):
 	def calc(self, x_cluster, y_cluster):
 		# get the adjusted rand index
 		ARI = sklearn.metrics.adjusted_rand_score(x_cluster, y_cluster)
-		return {"ARI": ARI}
+		report = dict(tex="$ARI = {}$".format(ARI), html="ARI = {}".format(round(ARI, 3)))
+		return {"ARI": ARI, "report": report}
 
 	def title(self):
 		return "Adjusted Rand Index, (%s) vs (%s) labeling" % \
