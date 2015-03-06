@@ -1,130 +1,76 @@
 {
-    "posthoc": [
-        {
-            "Xcat": "1", 
-            "stats": {
-                "chi-squared": {
-                    "chi2": 0.4125, 
-                    "dof": 0.5207, 
-                    "expected": [
-                        [
-                            1.0909, 
-                            0.9091
-                        ], 
-                        [
-                            4.9091, 
-                            4.0909
-                        ]
-                    ], 
-                    "p": 1, 
-                    "valid": false
-                }, 
-                "fisher": {
-                    "p": 0.4545
-                }
-            }
-        }, 
-        {
-            "Xcat": "2", 
-            "stats": {
-                "chi-squared": {
-                    "chi2": 0.0092, 
-                    "dof": 0.9237, 
-                    "expected": [
-                        [
-                            0.5455, 
-                            0.4545
-                        ], 
-                        [
-                            5.4545, 
-                            4.5455
-                        ]
-                    ], 
-                    "p": 1, 
-                    "valid": false
-                }, 
-                "fisher": {
-                    "p": 0.4545
-                }
-            }
-        }, 
-        {
-            "Xcat": "3", 
-            "stats": {
-                "chi-squared": {
-                    "chi2": 2.3872, 
-                    "dof": 0.1223, 
-                    "expected": [
-                        [
-                            1.6364, 
-                            1.3636
-                        ], 
-                        [
-                            4.3636, 
-                            3.6364
-                        ]
-                    ], 
-                    "p": 1, 
-                    "valid": false
-                }, 
-                "fisher": {
-                    "p": 0.0606
-                }
-            }
-        }, 
-        {
-            "Xcat": "4", 
-            "stats": {
-                "chi-squared": {
-                    "chi2": 0.8831, 
-                    "dof": 0.3474, 
-                    "expected": [
-                        [
-                            2.7273, 
-                            2.2727
-                        ], 
-                        [
-                            3.2727, 
-                            2.7273
-                        ]
-                    ], 
-                    "p": 1, 
-                    "valid": false
-                }, 
-                "fisher": {
-                    "p": 0.2424
-                }
-            }
-        }
-    ], 
+    "request": "contingency", 
     "samplesRemoved": 0, 
     "stats": {
-        "chi2": 7.7733, 
-        "dof": 0.0509, 
-        "expected": [
-            [
-                1.0909, 
-                0.9091
+        "Chi square test, (1, 2, 3, 4) on (1, 2) membership": {
+            "DOF": 3, 
+            "Expected": [
+                [
+                    1.0909, 
+                    0.9091
+                ], 
+                [
+                    0.5455, 
+                    0.4545
+                ], 
+                [
+                    1.6364, 
+                    1.3636
+                ], 
+                [
+                    2.7273, 
+                    2.2727
+                ]
             ], 
-            [
-                0.5455, 
-                0.4545
-            ], 
-            [
-                1.6364, 
-                1.3636
-            ], 
-            [
-                2.7273, 
-                2.2727
-            ]
-        ], 
-        "p": 3, 
-        "valid": false
+            "Valid (all cells > 5)": false, 
+            "X": "1, 2, 3, 4", 
+            "Y": "1, 2", 
+            "chi2": 7.7733, 
+            "p": 0.0509, 
+            "report": {
+                "html": "&chi;<sup>2</sup>(3) = 7.77333, <b>P-value</b> = 0.050936", 
+                "tex": "$\\chi^2(3) = 7.7733, P = 0.0509$"
+            }
+        }, 
+        "Fisher's exact test, 1 vs Not 1 on 1 vs 2 membership": {
+            "X": "1, Not 1", 
+            "Y": "1, 2", 
+            "p": 0.4545, 
+            "report": {
+                "html": "<b>P-value</b> = 0.454545", 
+                "tex": "$P = 0.454545$"
+            }
+        }, 
+        "Fisher's exact test, 2 vs Not 2 on 1 vs 2 membership": {
+            "X": "2, Not 2", 
+            "Y": "1, 2", 
+            "p": 0.4545, 
+            "report": {
+                "html": "<b>P-value</b> = 0.454545", 
+                "tex": "$P = 0.454545$"
+            }
+        }, 
+        "Fisher's exact test, 3 vs Not 3 on 1 vs 2 membership": {
+            "X": "3, Not 3", 
+            "Y": "1, 2", 
+            "p": 0.0606, 
+            "report": {
+                "html": "<b>P-value</b> = 0.0606061", 
+                "tex": "$P = 0.0606061$"
+            }
+        }, 
+        "Fisher's exact test, 4 vs Not 4 on 1 vs 2 membership": {
+            "X": "4, Not 4", 
+            "Y": "1, 2", 
+            "p": 0.2424, 
+            "report": {
+                "html": "<b>P-value</b> = 0.242424", 
+                "tex": "$P = 0.242424$"
+            }
+        }
     }, 
     "table": [
         [
-            "", 
             "1", 
             "2"
         ], 

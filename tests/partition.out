@@ -1,0 +1,28 @@
+{
+    "request": "partitions", 
+    "samplesRemoved": 0, 
+    "stats": {
+        "Adjusted Rand Index, ([u'0', u'1']) vs ([u'0', u'1', u'2']) labeling": {
+            "ARI": 0.2424
+        }
+    }, 
+    "table": [
+        [
+            "0", 
+            "1", 
+            "2"
+        ], 
+        [
+            "0", 
+            2.0, 
+            1.0, 
+            0.0
+        ], 
+        [
+            "1", 
+            0.0, 
+            1.0, 
+            2.0
+        ]
+    ]
+}
