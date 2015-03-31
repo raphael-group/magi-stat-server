@@ -31,10 +31,10 @@ class StatsHandler(tornado.web.RequestHandler):
 		if self.get_status() == httplib.OK:
 			table = reply['table']
 			r, c = len(table) - 1, len(table[0]) - 1
-			time_print("Received request type %s (%d x %d), returning OK, categorical test results." % (reply['request'], r, c))
+			time_print("Reply OK: Received request type %s (%d x %d), categorical test results." % (reply['request'], r, c))
 		elif self.get_status() == httplib.BAD_REQUEST:
 			errors = reply['Error']
-			time_print("Received bad request, returning BAD_REQUEST, errors: "+ ";".join(errors))
+			time_print("Reply BAD_REQUEST: Received bad request: "+ ";".join(errors))
 
 		result = round_all(reply, 4)
 		self._send_message(result)
