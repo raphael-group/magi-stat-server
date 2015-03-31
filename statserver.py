@@ -19,25 +19,37 @@ def round_all(obj, N):
 		return map(lambda(o): round_all(o, N), obj)
 	return obj
 
+def time_print(s):
+	ts = time.strftime("[%m/%d/%y %H:%M:%S]")
+	print ts + ": " + s
+	
 ##### request handler which takes in POST requests and returns JSONs #####
 class StatsHandler(tornado.web.RequestHandler):
 	# take in a dict / other jsonable object and send it back
 	def _return(self, reply):
 		# logging
-		ts = time.strftime("[%m/%d/%y %H:%M:%S]")
 		if self.get_status() == httplib.OK:
 			table = reply['table']
 			r, c = len(table) - 1, len(table[0]) - 1
-			print "%s: Received request type %s (%d x %d), returning OK, categorical test results." % (ts, reply['request'], r, c)
+			time_print("Received request type %s (%d x %d), returning OK, categorical test results." % (reply['request'], r, c))
 		elif self.get_status() == httplib.BAD_REQUEST:
 			errors = reply['Error']
-			print "%s: Received bad request, returning BAD_REQUEST, errors: %s" % (ts, ";".join(errors))
+			time_print("Received bad request, returning BAD_REQUEST, errors: "+ ";".join(errors))
 
 		result = round_all(reply, 4)
+		self._send_message(result)
+		
+	def _send_message(self, reply):
 		self.set_header("Content-Type", "application/json")
 		self.set_header("Access-Control-Allow-Origin", "*")
-		self.write(json.dumps(result, sort_keys=True, indent=4))
+		self.write(json.dumps(reply, sort_keys=True, indent=4))
 		self.finish()
+
+	def get(self):
+		info = {'Name': 'Magi Statistics server'}
+		time_print("Received GET information request")
+		
+		self._send_message(info)
 		
 	def post(self):
 		# load raw data
