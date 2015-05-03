@@ -51,6 +51,14 @@ class StatsHandler(tornado.web.RequestHandler):
 		
 		self._send_message(info)
 		
+	def options(self):
+		info = {'Name': 'Magi Statistics server'}
+		time_print("Received GET information request")
+		self.set_header("Access-Control-Allow-Headers", "Content-Type;Access-Control-Allow-Origin")
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.write(json.dumps(info, sort_keys=True, indent=4))
+		self.finish()
+
 	def post(self):
 		# load raw data
 		rawdata = json.loads(self.request.body)
@@ -95,7 +103,7 @@ application = tornado.web.Application([
 	(r"/", StatsHandler),
 ])
 
-# listen on port 8888: todo: export to other ports based on command-line arg
+# listen on port: todo: export to other ports based on command-line arg
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser('Run a JSON-based statistics server.')
 	parser.add_argument('--port', default=8888, help='port that the statistics server runs on', type=int)
