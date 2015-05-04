@@ -3,11 +3,16 @@
     "samplesRemoved": 0, 
     "stats": {
         "Adjusted Rand Index, ([u'0', u'1']) vs ([u'0', u'1', u'2']) labeling": {
-            "ARI": 0.2424
+            "ARI": 0.2424, 
+            "report": {
+                "html": "ARI = 0.242", 
+                "tex": "$ARI = 0.242424242424$"
+            }
         }
     }, 
     "table": [
         [
+            "", 
             "0", 
             "1", 
             "2"

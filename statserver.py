@@ -6,16 +6,6 @@ import tornado.ioloop
 import tornado.web
 import stats as S # local
 
-# rounds all the floats in a json
-def round_all(obj, N):
-	if isinstance(obj, float):
-		return round(obj, N)
-	elif isinstance(obj, dict):
-		return dict((k, round_all(v, N)) for (k, v) in obj.items())
-	elif isinstance(obj, (list, tuple)):
-		return map(lambda o: round_all(o, N), obj)
-	return obj
-
 ##### request handler which takes in POST requests and returns JSONs #####
 class StatsHandler(tornado.web.RequestHandler):
 	# take in a dict / other jsonable object and send it back
@@ -29,7 +19,6 @@ class StatsHandler(tornado.web.RequestHandler):
 			errors = reply['Error']
 			print "Received bad request, returning BAD_REQUEST, errors: " + ";".join(errors)
 
-		result = round_all(reply, 4)
 		self.set_header("Content-Type", "application/json")
 		self.set_header("Access-Control-Allow-Origin", "*")
 		self.write(json.dumps(result, sort_keys=True, indent=4))

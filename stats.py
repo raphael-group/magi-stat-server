@@ -3,6 +3,20 @@ from scipy import stats
 import numpy
 import sklearn.metrics
 
+# rounds all the floats in a json
+def round_all(obj, N):
+	if isinstance(obj, float):
+		return round(obj, N)
+	elif isinstance(obj, dict):
+		return dict((k, round_all(v, N)) for (k, v) in obj.items())
+	elif isinstance(obj, (list, tuple)):
+		return map(lambda o: round_all(o, N), obj)
+	return obj
+
+# post process the results
+def post_process(res):
+	return round_all(res, 4)
+
 # return contingency table, x categories, y categories
 def tabulate(x_list, y_list):
 	x_cats, xinv = numpy.unique(x_list, return_inverse=True)
@@ -170,7 +184,7 @@ class contingency_tests(object):
 
 					result['stats'][fisher.title()] = sub_result
 
-		return result
+		return post_process(result)
 
 ################ set of tests for contingency-type data ##################
 class partition_tests(object):
@@ -203,4 +217,4 @@ class partition_tests(object):
 					  samplesRemoved=len(indicesRemoved))
 		result['stats'][ari.title()] = ari.calc(raw['X'], raw['Y'])
 		
-		return result
+		return post_process(result)

@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import subprocess
 import sys
 import unittest
 import submit # local
@@ -8,7 +9,7 @@ import submit # local
 class TestStatServer(unittest.TestCase):
 	pass
 
-def test_generator(input_file, output_file, port):
+def test_generator_server(input_file, output_file, port):
 	def test(self):
 		with open('tests/' + input_file) as fin:
 			json_in = json.load(fin)
@@ -41,7 +42,7 @@ if __name__ == "__main__":
 		if file_out in output_files:
 			# add the test
 			setattr(TestStatServer, "test_" + test_name, \
-					test_generator(file_in, file_out, port=args.port)) 
+					test_generator_server(file_in, file_out, port=args.port)) 
 
 	# pass only the title to unittest			
 	unittest.main(argv = ['testServer.py'])
