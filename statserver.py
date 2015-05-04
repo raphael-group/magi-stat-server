@@ -2,10 +2,15 @@ import argparse
 import httplib
 import json
 import numpy
+import time
 import tornado.ioloop
 import tornado.web
 import stats as S # local
 
+def time_print(s):
+	ts = time.strftime("[%m/%d/%y %H:%M:%S]")
+	print ts + ": " + s
+	
 ##### request handler which takes in POST requests and returns JSONs #####
 class StatsHandler(tornado.web.RequestHandler):
 	# take in a dict / other jsonable object and send it back
@@ -14,16 +19,33 @@ class StatsHandler(tornado.web.RequestHandler):
 		if self.get_status() == httplib.OK:
 			table = reply['table']
 			r, c = len(table) - 1, len(table[0]) - 1
-			print "Received request type %s (%d x %d), returning OK, categorical test results." % (reply['request'], r, c)
+			time_print("Reply OK: Received request type %s (%d x %d), categorical test results." % (reply['request'], r, c))
 		elif self.get_status() == httplib.BAD_REQUEST:
 			errors = reply['Error']
-			print "Received bad request, returning BAD_REQUEST, errors: " + ";".join(errors)
+			time_print("Reply BAD_REQUEST: Received bad request: "+ ";".join(errors))
 
+		self._send_message(reply)
+		
+	def _send_message(self, reply):
 		self.set_header("Content-Type", "application/json")
 		self.set_header("Access-Control-Allow-Origin", "*")
-		self.write(json.dumps(result, sort_keys=True, indent=4))
+		self.write(json.dumps(reply, sort_keys=True, indent=4))
 		self.finish()
+
+	def get(self):
+		info = {'Name': 'Magi Statistics server'}
+		time_print("Received GET information request")
 		
+		self._send_message(info)
+		
+	def options(self):
+		info = {'Name': 'Magi Statistics server'}
+		time_print("Received GET information request")
+		self.set_header("Access-Control-Allow-Headers", "Content-Type;Access-Control-Allow-Origin")
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.write(json.dumps(info, sort_keys=True, indent=4))
+		self.finish()
+
 	def post(self):
 		# load raw data
 		rawdata = json.loads(self.request.body)
@@ -68,7 +90,7 @@ application = tornado.web.Application([
 	(r"/", StatsHandler),
 ])
 
-# listen on port 8888: todo: export to other ports based on command-line arg
+# listen on port: todo: export to other ports based on command-line arg
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser('Run a JSON-based statistics server.')
 	parser.add_argument('--port', default=8888, help='port that the statistics server runs on', type=int)
