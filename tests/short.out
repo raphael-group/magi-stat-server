@@ -1,29 +1,19 @@
 {
+    "request": "contingency", 
     "samplesRemoved": 0, 
     "stats": {
-        "chi-squared": {
-            "chi2": 0.5, 
-            "dof": 0.4795, 
-            "expected": [
-                [
-                    2.0, 
-                    2.0
-                ], 
-                [
-                    2.0, 
-                    2.0
-                ]
-            ], 
-            "p": 1, 
-            "valid": false
-        }, 
-        "fisher": {
-            "p": 0.4857
+        "Fisher's exact test, 1 vs 2 on 1 vs 2 membership": {
+            "X": "1, 2", 
+            "Y": "1, 2", 
+            "p": 0.4857, 
+            "report": {
+                "html": "<b>P-value</b> = 0.485714", 
+                "tex": "$P = 0.485714$"
+            }
         }
     }, 
     "table": [
         [
-            "", 
             "1", 
             "2"
         ], 

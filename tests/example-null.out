@@ -1,29 +1,19 @@
 {
+    "request": "contingency", 
     "samplesRemoved": 5, 
     "stats": {
-        "chi-squared": {
-            "chi2": 0.2716, 
-            "dof": 0.6023, 
-            "expected": [
-                [
-                    8.6737, 
-                    15.3263
-                ], 
-                [
-                    94.3263, 
-                    166.6737
-                ]
-            ], 
-            "p": 1, 
-            "valid": true
-        }, 
-        "fisher": {
-            "p": 0.5133
+        "Fisher's exact test, Mutated vs Not mutated on female vs male membership": {
+            "X": "Mutated, Not mutated", 
+            "Y": "female, male", 
+            "p": 0.5133, 
+            "report": {
+                "html": "<b>P-value</b> = 0.513287", 
+                "tex": "$P = 0.513287$"
+            }
         }
     }, 
     "table": [
         [
-            "", 
             "female", 
             "male"
         ], 
